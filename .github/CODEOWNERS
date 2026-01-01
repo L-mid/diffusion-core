@@ -1,21 +1,21 @@
 # Default: require the reviewer for everything 
-* @l-mid
+* @l-review 
 
 # Lock down governance itself
-/.github/ @l-mid
-/.github/CODEOWNERS @l-mid
+/.github/ @l-review
+/.github/CODEOWNERS @l-review
 
 # CI workflows
-/.github/workflows/ @l-mid
+/.github/workflows/ @l-review
 
 # Docs contracts 
-/docs/add_a_metric.md @l-mid
-/docs/safe_experiment_tweaks.md @l-mid
+/docs/add_a_metric.md @l-review
+/docs/safe_experiment_tweaks.md @l-review
 
 # Core contracts (adjust paths as they appear in the repo)
-#/src/diffusion_core/config/ @l-mid
-#/src/diffusion_core/schema/ @l-mid
-#/src/diffusion_core/provenance/ @l-mid
-#/src/diffusion_core/checkpointing/ @l-mid
-#/src/diffusion_core/eval/ @l-mid
-#/src/diffusion_core/metrics/ @l-mid
+#/src/diffusion_core/config/ @l-review
+#/src/diffusion_core/schema/ @l-review
+#/src/diffusion_core/provenance/ @l-review
+#/src/diffusion_core/checkpointing/ @l-review
+#/src/diffusion_core/eval/ @l-review
+#/src/diffusion_core/metrics/ @l-review

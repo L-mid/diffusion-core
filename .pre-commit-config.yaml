@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: blocks-artifacts
+        name: Artifact blocker (forbidden artifacts)
+        entry: python tools/blocks_artifacts.py --mode=staged
+        language: system
+        pass_filenames: false
+

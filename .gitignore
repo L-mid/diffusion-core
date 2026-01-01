@@ -1,9 +1,68 @@
+# =========================
+# FORBIDDEN ARTIFACTS (HARD BAN)
+# =========================
+runs/
+run/
+checkpoints/
+checkpoint/
+ckpts/
+ckpt/
+data/
+dataset/
+datasets/
+
+# Model / training artifacts
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+
+# Binary data blobs
+*.npz
+*.npy
+*.pkl
+*.pickle
+*.joblib
+
+# Archives
+*.zip
+*.tar
+*.tgz
+*.gz
+*.7z
+*.rar
+
+# Caches (explicit + common)
+caches/
+cache/
+.cache/
 __pycache__/
-*.py[cod]
-.venv/
-.env
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyright/
+.ipynb_checkpoints/
+wandb/
+lightning_logs/
+
+# =========================
+# PYTHON / VENV / BUILD
+# =========================
+.venv/
+venv/
+ENV/
+env/
 dist/
 build/
 *.egg-info/
+pip-wheel-metadata/
 
+# =========================
+# OS / EDITOR
+# =========================
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/

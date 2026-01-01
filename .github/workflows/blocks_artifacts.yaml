@@ -1,0 +1,23 @@
+name: artifact-blocker
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  block-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Artifact blocker (repo scan)
+        run: python tools/blocks_artifacts.py --mode=repo

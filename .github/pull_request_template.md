@@ -8,12 +8,12 @@
 
 
 ### Include in your description:
-What changed and why (2–6 lines, in ***bold italics*** below):
-******
+What changed and why (2–6 lines, in *italics* below):
+**
 
 
-Mention: tests/docs added/updated (y/n), **or** explain why not (1-2 lines):
-******
+Mention: tests/docs added/updated, **or** explain why not (1-2 lines):
+**
 
 
 ### Reproduce your changes

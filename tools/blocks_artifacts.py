@@ -145,6 +145,14 @@ def _check_paths(paths: Iterable[str], max_bytes: int) -> List[Violation]:
     return violations
 
 
+def scan_paths(paths, max_bytes: int = DEFAULT_MAX_BYTES):
+    """
+    Pure scan (no git). Useful for unit tests.
+    Returns a list of Violation objects.
+    """
+    return _check_paths(paths, max_bytes=max_bytes)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -169,10 +177,10 @@ def main() -> int:
 
     violations = _check_paths(files, max_bytes=args.max_bytes)
     if not violations:
-        print(f"[blocks_artifacts] OK ({args.mode}): no forbidden artifacts detected.")
+        print(f"[blocks_artifacts.py] OK ({args.mode}): no forbidden artifacts detected.")
         return 0
 
-    print("\n[blocks_artifacts] FAIL: forbidden artifacts detected:\n", file=sys.stderr)
+    print("\n[blocks_artifacts.py] FAIL: forbidden artifacts detected:\n", file=sys.stderr)
     for v in violations:
         print(f"  - {v.path}  ({v.reason})", file=sys.stderr)
 

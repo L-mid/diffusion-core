@@ -6,20 +6,20 @@
 - [ ] new public API/CLI
 - [ ] experiment-only (no core touched)
 
-### Description
+
+### Include in your description:
 What changed and why (2–6 lines):
 
 Tests/docs added/updated (y/n), or explain why not (1-2 lines):
 
-
-
-### Repro (required)
-Command(s) to reproduce/validate:   
+#### Basic repro 
+Command(s) to reproduce/validate your new changes:   
 ```bash
-# example: (will be smokes/precommit later)
+# example: (please include full commands)
 python -m diffusion_core.tools.smoke --config configs/...
 ```
 
 
-### If experiment-only: changes are isolated and do **not** conflict with/modify core infrastructure (y/n):
-- [ ]
+
+
+

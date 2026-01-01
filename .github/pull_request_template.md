@@ -8,15 +8,21 @@
 
 
 ### Include in your description:
-What changed and why (2–6 lines):
+What changed and why (2–6 lines, in ***bold italics*** below):
+******
 
-Tests/docs added/updated (y/n), or explain why not (1-2 lines):
 
-#### Basic repro 
-Command(s) to reproduce/validate your new changes:   
+Mention: tests/docs added/updated (y/n), **or** explain why not (1-2 lines):
+******
+
+
+### Reproduce your changes
+Show command(s) to reproduce/validate your new changes:   
 ```bash
-# example: (please include full commands)
+
+# example CLI entrypoint: (please include **full** commands needed...)
 python -m diffusion_core.tools.smoke --config configs/...
+
 ```
 
 

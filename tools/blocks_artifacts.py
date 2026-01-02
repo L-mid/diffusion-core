@@ -1,18 +1,24 @@
 #!/usr/bin/env python3
 """
-Artifact Blocker (STRICT)
+Blocks Artifacts
 
 Fails the check if any forbidden artifacts are present in:
 - staged changes (default; for local pre-commit)
 - entire repo working tree (for CI)
+    
+Checks for:
+    .git files (skips)
+    Forbidden dirs it recognizes
+    Forbidden extensions
+    Files over 20 mb. 
 
+    
 Why: .gitignore can be bypassed with `git add -f`, and doesn't protect history by itself.
 """
 
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -20,6 +26,10 @@ from pathlib import Path
 from typing import Iterable, List, Tuple
 
 
+
+# The below are similar to gitingore and 
+# will be updated if there's another convenient dir to gitingore later
+# or another extension 'should be ingored' occurence.
 FORBIDDEN_DIR_NAMES = {
     "runs",
     "run",
@@ -69,6 +79,9 @@ class Violation:
 
 
 def _run_git(args: List[str]) -> str:
+    """
+    Initalize and call in subprocess. 
+    """
     try:
         out = subprocess.check_output(["git", *args], stderr=subprocess.STDOUT)
         return out.decode("utf-8", errors="replace")
@@ -78,21 +91,27 @@ def _run_git(args: List[str]) -> str:
 
 
 def _list_staged_files() -> List[str]:
-    # Include A(dd), C(opy), M(odify), R(ename), T(type), U(unmerged), X(unknown), B(broken)
+    """Include A(dd), C(opy), M(odify), R(ename), T(type), U(unmerged), X(unknown), B(broken) in this list"""
     out = _run_git(["diff", "--cached", "--name-only", "--diff-filter=ACMRTUXB"])
     files = [line.strip() for line in out.splitlines() if line.strip()]
     return files
 
 
 def _list_repo_files() -> List[str]:
-    # Use git ls-files to avoid scanning ignored/untracked junk,
-    # but still catch tracked forbidden files.
+    """
+    Use git ls-files to avoid scanning ignored/untracked junk,
+    But still catch tracked forbidden files.
+    """
     out = _run_git(["ls-files"])
     files = [line.strip() for line in out.splitlines() if line.strip()]
     return files
 
 
 def _is_under_forbidden_dir(path: Path) -> Tuple[bool, str]:
+    """
+    Recurses over dirs's parts to find if under forbidden dir.
+    Returns tuple with this bool + str (message).
+    """
     parts = [p for p in path.parts if p not in (".", "")]
     for p in parts:
         if p in FORBIDDEN_DIR_NAMES:
@@ -101,6 +120,10 @@ def _is_under_forbidden_dir(path: Path) -> Tuple[bool, str]:
 
 
 def _is_forbidden_ext(path: Path) -> Tuple[bool, str]:
+    """
+    Checks file suffix for forbidden extensions.
+    Returns tuple with this bool + str (message).
+    """
     suf = path.suffix.lower()
     if suf in FORBIDDEN_EXTS:
         return True, f"forbidden extension '{suf}'"
@@ -108,6 +131,10 @@ def _is_forbidden_ext(path: Path) -> Tuple[bool, str]:
 
 
 def _is_too_large(path: Path, max_bytes: int) -> Tuple[bool, str]:
+    """
+    if size > max_bytes: (True, False)
+    Returns tuple with this bool + str (message).
+    """
     try:
         size = path.stat().st_size
     except FileNotFoundError:
@@ -119,6 +146,13 @@ def _is_too_large(path: Path, max_bytes: int) -> Tuple[bool, str]:
 
 
 def _check_paths(paths: Iterable[str], max_bytes: int) -> List[Violation]:
+    """
+    High level violation checker, checks for:
+        .git files (skips)
+        Forbidden dirs it recognizes (important, gitingored files can still be added with -f)
+        Forbidden extensions
+        Files over 20 mb. 
+    """
     violations: List[Violation] = []
     for p in paths:
         # Normalize to forward slashes for output readability

@@ -33,9 +33,13 @@ from __future__ import annotations
 import argparse
 import ast
 import subprocess
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import TypeAlias
+
+TopLevelDef: TypeAlias = ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef
+DocstringNode: TypeAlias = ast.Module | TopLevelDef
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -53,11 +57,15 @@ def detect_pkg_dir() -> Path:
     if len(candidates) == 1:
         return candidates[0]
     if len(candidates) == 0:
-        raise SystemExit("Could not auto-detect package dir under src/. Add src/<pkg>/__init__.py.")
-    raise SystemExit(f"Multiple packages under src/: {[c.name for c in candidates]}. Pass --pkg explicitly.")
+        raise SystemExit(
+            "Could not auto-detect package dir under src/. Add src/diffusion_core/__init__.py."
+        )
+    raise SystemExit(
+        f"Multiple packages under src/: {[c.name for c in candidates]}. Pass --pkg explicitly."
+    )
 
 
-def pkg_dir(pkg_name: Optional[str]) -> Path:
+def pkg_dir(pkg_name: str | None) -> Path:
     """
     Searches for src root for detect_pkg_dir()
     """
@@ -79,7 +87,7 @@ CORE_MODULES = [
     "src/diffusion_core/executor.py",
     "src/diffusion_core/logging.py",
     "src/diffusion_core/eval/metrics.py",
-    "src/diffusion_core/eval/metrics/__init__.py",      # might be irrelevent
+    "src/diffusion_core/eval/metrics/__init__.py",  # might be irrelevent
     "src/diffusion_core/checkpointing.py",
     "src/diffusion_core/determinism.py",
 ]
@@ -116,19 +124,22 @@ class Violation:
     message: str
 
 
-def parse_py(path: Path) -> ast.AST:
+def parse_py(path: Path) -> ast.Module:
     """Parses python files."""
     src = path.read_text(encoding="utf-8")
     try:
-        return ast.parse(src, filename=str(path))
+        tree = ast.parse(src, filename=str(path))
     except SyntaxError as e:
         raise SystemExit(f"SyntaxError parsing {path}:{e.lineno}:{e.offset}: {e.msg}") from e
 
+    # ast.parse returns a Module at runtime; make it explicit for the type-checker.
+    if not isinstance(tree, ast.Module):
+        raise SystemExit(f"Internal error: expected ast.Module from ast.parse for {path}.")
+    return tree
 
-def module_docstring_ok(mod: ast.AST) -> bool:
-    """
-    Return: (bool) is there a docstring?
-    """
+
+def module_docstring_ok(mod: ast.Module) -> bool:
+    """Return True if module has a docstring."""
     return bool(ast.get_docstring(mod))
 
 
@@ -160,19 +171,19 @@ def is_public_name(name: str) -> bool:
     return not name.startswith("_")
 
 
-def top_level_defs(mod: ast.Module) -> list[ast.AST]:
-    """Fetches from the top level of the module."""
-    out: list[ast.AST] = []
+def top_level_defs(mod: ast.Module) -> list[TopLevelDef]:
+    """Fetch top-level defs that can have docstrings."""
+    out: list[TopLevelDef] = []
     for node in mod.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
             out.append(node)
     return out
 
 
-def extract_all_list(mod: ast.Module) -> list[str]:
+def extract_all_list(mod: ast.Module) -> list[str] | None:
     """
     Extract __all__ = ["a", "b"].
-    Requires __all__ to be a literal list/tuple of string constants for objectivity.
+    Requires __all__ to be a literal list/tuple of string constants.
     Returns None if __all__ is not defined.
     """
     for node in mod.body:
@@ -187,7 +198,8 @@ def extract_all_list(mod: ast.Module) -> list[str]:
                                 items.append(elt.value)
                             else:
                                 raise SystemExit(
-                                    "__all__ must be a literal list/tuple of strings (no computed expressions)."
+                                    "__all__ must be a literal list/tuple of strings "
+                                    "(no computed expressions)."
                                 )
                         return items
                     raise SystemExit("__all__ must be a literal list/tuple of strings.")
@@ -213,7 +225,7 @@ def import_map_from_init(mod: ast.Module) -> dict[str, tuple[str, str]]:
     return mapping
 
 
-def resolve_module_file(pkg: Path, dotted: str) -> Optional[Path]:
+def resolve_module_file(pkg: Path, dotted: str) -> Path | None:
     """
     dotted like "api.metrics" => src/<pkg>/api/metrics.py or api/metrics/__init__.py
     """
@@ -227,9 +239,12 @@ def resolve_module_file(pkg: Path, dotted: str) -> Optional[Path]:
     return None
 
 
-def find_top_level_symbol(mod: ast.Module, name: str) -> Optional[ast.AST]:
+def find_top_level_symbol(mod: ast.Module, name: str) -> TopLevelDef | None:
+    """
+    Finds nodes from the top level.
+    """
     for node in top_level_defs(mod):
-        if getattr(node, "name", None) == name:
+        if node.name == name:
             return node
     return None
 
@@ -238,7 +253,10 @@ def find_top_level_symbol(mod: ast.Module, name: str) -> Optional[ast.AST]:
 # Checks
 # -----------------------------
 def check_api_file(path: Path) -> list[Violation]:
-    """Checks Public API has doctrings (defined as under diffusion_core/__init__.py)"""
+    """
+    Checks Public API has doctrings
+    (defined as under diffusion_core/__init__.py)
+    """
     v: list[Violation] = []
     tree = parse_py(path)
     assert isinstance(tree, ast.Module)
@@ -248,7 +266,7 @@ def check_api_file(path: Path) -> list[Violation]:
         v.append(Violation(path, 1, "Missing module docstring (required for public API file)."))
 
     for node in top_level_defs(tree):
-        name = node.name  # type: ignore[attr-defined]
+        name = node.name
         if not is_public_name(name):
             continue
         doc = ast.get_docstring(node)
@@ -266,9 +284,14 @@ def check_core_module(path: Path) -> list[Violation]:
     """Checks for core infrastructure docstrings."""
     v: list[Violation] = []
     tree = parse_py(path)
-    assert isinstance(tree, ast.Module)
     if not module_docstring_ok(tree):
-        v.append(Violation(path, 1, "Missing module header docstring (required for core infrastructure module)."))
+        v.append(
+            Violation(
+                path,
+                1,
+                "Missing module header docstring (required for core infrastructure module).",
+            )
+        )
     return v
 
 
@@ -276,9 +299,12 @@ def check_init_exports(init_path: Path, pkg: Path) -> list[Violation]:
     """Does init actually export its files?"""
     v: list[Violation] = []
     tree = parse_py(init_path)
-    assert isinstance(tree, ast.Module)
     if not module_docstring_ok(tree):
-        v.append(Violation(init_path, 1, "Missing module docstring in package __init__.py (public file)."))
+        v.append(
+            Violation(
+                init_path, 1, "Missing module docstring in package __init__.py (public file)."
+            )
+        )
 
     exported = extract_all_list(tree)
     if exported is None:
@@ -297,7 +323,8 @@ def check_init_exports(init_path: Path, pkg: Path) -> list[Violation]:
                 Violation(
                     init_path,
                     1,
-                    f"__all__ exports '{name}' but it is not imported via a simple 'from .x import {name}' mapping.",
+                    f"__all__ exports '{name}' but "
+                    "it is not imported via a simple 'from .x import {name}' mapping.",
                 )
             )
             continue
@@ -305,14 +332,21 @@ def check_init_exports(init_path: Path, pkg: Path) -> list[Violation]:
         mod_dotted, original = imports[name]
         mod_file = resolve_module_file(pkg, mod_dotted)
         if mod_file is None:
-            v.append(Violation(init_path, 1, f"Cannot resolve module '.{mod_dotted}' for exported '{name}'."))
+            v.append(
+                Violation(
+                    init_path, 1, f"Cannot resolve module '.{mod_dotted}' for exported '{name}'."
+                )
+            )
             continue
 
         mod_tree = parse_py(mod_file)
-        assert isinstance(mod_tree, ast.Module)
         sym = find_top_level_symbol(mod_tree, original)
         if sym is None:
-            v.append(Violation(mod_file, 1, f"Exported '{name}' maps to '{original}' but symbol not found."))
+            v.append(
+                Violation(
+                    mod_file, 1, f"Exported '{name}' maps to '{original}' but symbol not found."
+                )
+            )
             continue
 
         doc = ast.get_docstring(sym)
@@ -324,7 +358,11 @@ def check_init_exports(init_path: Path, pkg: Path) -> list[Violation]:
         if has_escape_with_reason(def_line):
             continue
 
-        v.append(Violation(mod_file, sym.lineno, f"Exported public symbol '{name}' is missing a docstring."))
+        v.append(
+            Violation(
+                mod_file, sym.lineno, f"Exported public symbol '{name}' is missing a docstring."
+            )
+        )
 
     return v
 
@@ -339,7 +377,9 @@ def main() -> int:
     ap.add_argument("--pkg", default=None, help="Package directory name under src/, diffusion_core")
     g = ap.add_mutually_exclusive_group(required=False)
     g.add_argument("--staged", action="store_true", help="Check staged changes only (default).")
-    g.add_argument("--range", dest="diff_range", default=None, help="Git diff range, e.g. origin/main...HEAD")
+    g.add_argument(
+        "--range", dest="diff_range", default=None, help="Git diff range, e.g. origin/main...HEAD"
+    )
     g.add_argument("--all", action="store_true", help="Check all relevant files, not just changed.")
     args = ap.parse_args()
 
@@ -398,7 +438,8 @@ def main() -> int:
             print(f"- {rel}:{vio.lineno}: {vio.message}")
         print(
             "\nFix: add required docstrings, or use an ignore method with a reason "
-            "(# noqa: DOC <reason>) and list it in your PR. \n\nSee `docs/the_docstrings_policy.md` for more information.\n"
+            "(# noqa: DOC <reason>) and list it in your PR. "
+            "\n\nSee `docs/the_docstrings_policy.md` for more information.\n"
         )
         return 1
 

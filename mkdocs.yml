@@ -15,3 +15,5 @@ nav:
       - Environment: enviroment.md
       - Problems log: problems_log.md
       - Ground Truth: ssot.md
+      - Run Layout: run_layout_contract.md
+      - Contract Tests: contract_tests.md

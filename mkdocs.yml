@@ -1,0 +1,16 @@
+site_name: diffusion-core
+site_url: ""
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Policies:
+      - Artifacts policy: the_artifacts_policy.md
+      - Docstrings policy: the_docstrings_policy.md
+      - Security: SECURITY.md
+  - Dev logs:
+      - Contributing: CONTRIBUTING.md
+      - Debugging: debugging.md
+      - Decisions log: decisions_log.md
+      - Environment: enviroment.md
+      - Problems log: problems_log.md

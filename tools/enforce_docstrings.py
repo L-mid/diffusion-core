@@ -394,7 +394,19 @@ def main() -> int:
     api_dir = pkg / "api"
     init_path = pkg / "__init__.py"
 
-    if args.all:
+    # In CI (and running pre-commit with --all-files),
+    # can be *no staged files*, so --staged does not check
+    scope_all = bool(args.all)
+    changed: list[str] = []
+    if not scope_all:
+        if args.diff_range:
+            changed = changed_files_from_range(args.diff_range)
+        else:
+            changed = changed_files_staged()
+            if not changed:
+                scope_all = True
+
+    if scope_all:
         changed = []
         # check all possible targets
         candidates: list[Path] = []
@@ -407,10 +419,6 @@ def main() -> int:
                 candidates.append(p)
         targets = sorted({p.resolve() for p in candidates})
     else:
-        if args.diff_range:
-            changed = changed_files_from_range(args.diff_range)
-        else:
-            changed = changed_files_staged()
         targets = [ROOT / p for p in changed if p.endswith(".py")]
 
     violations: list[Violation] = []

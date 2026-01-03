@@ -33,6 +33,13 @@ repos:
         language: system
         pass_filenames: false
 
+      - id: docs-build
+        name: docs build (mkdocs strict)
+        entry: python -m mkdocs build --strict --site-dir .mkdocs_site
+        language: system
+        pass_filenames: false
+
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.10
     hooks:

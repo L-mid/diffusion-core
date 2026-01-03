@@ -5,11 +5,9 @@ Tests two cases:
     1) Artifacts too large don't go through.
     2) Correctly size artifacts do.
 
-    
-Test file: tests/test_blocks_artifacts.py
 
+This is testing: tools/blocks_artifacts.py
 """
-
 
 from pathlib import Path
 

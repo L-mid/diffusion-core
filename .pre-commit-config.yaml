@@ -1,9 +1,40 @@
 repos:
   - repo: local
     hooks:
+      - id: precommit_guard
+        name: commit guard (no main commits or stale ref)
+        entry: python tools/precommit_guard.py
+        language: system
+        pass_filenames: false
+        require_serial: true
+        always_run: true
+
       - id: blocks-artifacts
-        name: Artifact blocker (forbidden artifacts)
+        name: artifact blocker (forbidden artifacts)
         entry: python tools/blocks_artifacts.py --mode=staged
         language: system
         pass_filenames: false
 
+      - id: enforce-docstrings
+        name: docstring enforcement (public API + core infra)
+        entry: python tools/enforce_docstrings.py --staged
+        language: system
+        pass_filenames: false
+
+      - id: pyright
+        name: pyright (type check)
+        entry: pyright
+        language: system
+        pass_filenames: false
+
+      - id: pytest-fast
+        name: pytest (fast suite)
+        entry: python -m pytest -m "not slow and not integration"
+        language: system
+        pass_filenames: false
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.10
+    hooks:
+      - id: ruff-format
+      - id: ruff-check

@@ -1,5 +1,12 @@
+"""
+Unit test for docstring enforcement.
+
+Tests:
+    1) Imports repo sucessfully and runs without error.
 
 
+This is testing: tools/enforce_docstrings.py
+"""
 
 import subprocess
 import sys
@@ -8,7 +15,7 @@ from pathlib import Path
 
 def test_repo_import_and_docstring_checker_runs():
     """
-    Imports and resolves repo route and returns without error. 
+    Imports and resolves repo route and returns without error.
     """
     # 1) prove the repo/package is importable
     import diffusion_core  # rename if your package name differs

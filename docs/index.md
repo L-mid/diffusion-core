@@ -1,3 +1,9 @@
+<!-- docs/index.md -->
+# diffusion-core
+
+Docs build gate is live.
+
+
 # Full repo layout:
 
 

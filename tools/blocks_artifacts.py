@@ -210,14 +210,24 @@ def main() -> int:
     args = ap.parse_args()
 
     try:
-        files = _list_staged_files() if args.mode == "staged" else _list_repo_files()
+        mode = args.mode
+        if args.mode == "staged":
+            files = _list_staged_files()
+            if not files:
+                # In CI (and sometimes running pre-commit with --all-files)
+                # nothing is staged. Fall back to scanning the tracked repo so the
+                # hook still checks.
+                files = _list_repo_files()
+                mode = "repo"
+        else:
+            files = _list_repo_files()
     except RuntimeError as e:
         print(str(e), file=sys.stderr)
         return 2
 
     violations = _check_paths(files, max_bytes=args.max_bytes)
     if not violations:
-        print(f"[blocks_artifacts.py] OK ({args.mode}): no forbidden artifacts detected.")
+        print(f"[blocks_artifacts.py] OK ({mode}): no forbidden artifacts detected.")
         return 0
 
     print("\n[blocks_artifacts.py] FAIL: forbidden artifacts detected:\n", file=sys.stderr)

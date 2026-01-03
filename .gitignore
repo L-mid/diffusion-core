@@ -57,6 +57,7 @@ dist/
 build/
 *.egg-info/
 pip-wheel-metadata/
+.mkdocs_site/
 
 # =========================
 # OS / EDITOR

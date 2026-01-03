@@ -1,3 +1,13 @@
+"""
+Unit test for docstring enforcement.
+
+Tests:
+    1) Imports repo sucessfully and runs without error.
+
+
+This is testing: tools/enforce_docstrings.py
+"""
+
 import subprocess
 import sys
 from pathlib import Path

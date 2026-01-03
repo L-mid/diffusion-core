@@ -1,12 +1,23 @@
-# REMEBER: this is desyned from previously made checking system. sync it
-
-# in repo
 repos:
   - repo: local
     hooks:
       - id: precommit_guard
-        name: git guard (no main commits + stale ref)
+        name: commit guard (no main commits or stale ref)
         entry: python tools/precommit_guard.py
+        language: system
+        pass_filenames: false
+        require_serial: true
+        always_run: true
+
+      - id: blocks-artifacts
+        name: artifact blocker (forbidden artifacts)
+        entry: python tools/blocks_artifacts.py --mode=staged
+        language: system
+        pass_filenames: false
+
+      - id: enforce-docstrings
+        name: docstring enforcement (public API + core infra)
+        entry: python tools/enforce_docstrings.py --staged
         language: system
         pass_filenames: false
 
@@ -22,38 +33,8 @@ repos:
         language: system
         pass_filenames: false
 
-      - id: blocks-artifacts
-        name: Artifact blocker (forbidden artifacts)
-        entry: python tools/blocks_artifacts.py --mode=staged
-        language: system
-        pass_filenames: false
-
-
-  # ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.10
     hooks:
       - id: ruff-format
       - id: ruff-check
-
-      # Docstring lint gate: ONLY public surface + core modules.
-      # Public surface rule: src/diffusion_core/__init__.py and src/diffusion_core/api/**
-      # Core modules: enforce module/function/class docstrings when these exist.
-      - id: ruff-check
-        name: ruff (docstring gate)
-        args: ["--select", "D"]
-        files: >
-          ^src/diffusion_core/(
-            __init__\.py|
-            api/|
-            config/|
-            run_layout\.py|
-            executor\.py|
-            logging\.py|
-            eval/|
-            metrics/|
-            checkpointing\.py|
-            determinism\.py
-          )
-
-

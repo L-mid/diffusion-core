@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Blocks Artifacts
+Blocks artifacts.
+
+Why: .gitignore can be bypassed with `git add -f`, and doesn't protect history by itself.
+
 
 Fails the check if any forbidden artifacts are present in:
 - staged changes (default; for local pre-commit)
@@ -13,7 +16,7 @@ Checks for:
     Files over 20 mb.
 
 
-Why: .gitignore can be bypassed with `git add -f`, and doesn't protect history by itself.
+Tested by: tests/test_blocks_artifacts.py
 """
 
 from __future__ import annotations

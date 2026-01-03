@@ -1,3 +1,16 @@
+"""
+Precommit guard.
+
+Why: Prevents main commits (disallowed) and stale ref pushes in PR's.
+
+Fails the check if:
+- Commiting to main
+- Commiting via detached HEAD
+- Commit is not based on latest origin/main (stale ref)
+
+Tested by: tests/test_precommit_guard.py
+"""
+
 #!/usr/bin/env python3
 from __future__ import annotations
 

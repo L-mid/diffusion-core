@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Docstring Contract checker.
+Enforces docstrings.
+
+Why: aid comprehensibility and cooperation in puplicly used spaces.
+
 
 Fails (exit 1) if:
 - Public surface symbols lack docstrings
@@ -24,7 +27,7 @@ TEMPORARY: manual calls
     Check everything (sanity sweep)
     python tools/enforce_docstrings.py --all
 
-Test file: test/test_enforces_docstrings.py
+Tested by: test/test_enforces_docstrings.py
 
 """
 

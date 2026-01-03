@@ -1,10 +1,10 @@
 ## PR Type (pick one)
-- [ ] behavior change
-- [ ] refactor (no behavior change)
+- [ ] behaviour change
+- [ ] refactor (no behaviour change)
 - [ ] docs only
 - [ ] schema/config change
 - [ ] new public API/CLI
-- [ ] experiment-only (no core touched)
+- [ ] experiment-only (no core infra/puplic API changed)
 
 
 ### Include in your description:

@@ -2,7 +2,7 @@
 Tests pytest works & collects tests.
 
 
-Tests called by: python -m pytest   # for now
+Tests called by: python -m pytest   # todo: for now
 """
 
 

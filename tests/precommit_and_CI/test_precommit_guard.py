@@ -6,6 +6,8 @@ Tests:
     2) commit is blocked if on the main branch
     3) commit is blocked if on a detached HEAD.
     4) commit is blocked if on a stale ref/deleted branch (passes otherwise)
+
+This is testing: tools/precommit_guard.py
 """
 
 from __future__ import annotations
@@ -15,7 +17,17 @@ import subprocess
 import sys
 from pathlib import Path
 
-SCRIPT = (Path(__file__).resolve().parents[1] / "tools" / "precommit_guard.py").resolve()
+
+def find_repo_root(start: Path) -> Path:
+    start = start.resolve()
+    for p in (start, *start.parents):
+        if (p / "pyproject.toml").exists():
+            return p
+    raise RuntimeError(f"Could not find repo root from {start}")
+
+
+REPO_ROOT = find_repo_root(Path(__file__))
+SCRIPT = REPO_ROOT / "tools" / "precommit_guard.py"
 
 
 def run(cmd: list[str], cwd: Path, check: bool = False) -> tuple[int, str]:

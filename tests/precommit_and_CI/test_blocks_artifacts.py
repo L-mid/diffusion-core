@@ -15,7 +15,7 @@ import tools.blocks_artifacts as ba
 
 
 def _make_sparse_file(path: Path, size_bytes: int) -> None:
-    # sparse file: fast and doesn't actually write 20MB of data
+    """sparse file: fast and doesn't actually write 20MB of data"""
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "wb") as f:
         f.seek(size_bytes - 1)
@@ -23,6 +23,7 @@ def _make_sparse_file(path: Path, size_bytes: int) -> None:
 
 
 def test_allows_small_good_file(tmp_path: Path):
+    """Small files pass though without blocking."""
     p = tmp_path / "good.dat"
     p.write_bytes(b"hello")  # tiny, allowed ext, not in forbidden dirs
 
@@ -31,6 +32,7 @@ def test_allows_small_good_file(tmp_path: Path):
 
 
 def test_rejects_over_20mb_file(tmp_path: Path):
+    """Files beyond this threshold are blocked."""
     p = tmp_path / "big.dat"
     _make_sparse_file(p, ba.DEFAULT_MAX_BYTES + 1)
 

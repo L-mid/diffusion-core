@@ -5,7 +5,7 @@ Tests:
     1) Imports repo sucessfully and runs without error.
 
 
-This is testing: tools/enforce_docstrings.py
+*This is testing: tools/enforce_docstrings.py*
 """
 
 import subprocess
@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 
-def test_repo_import_and_docstring_checker_runs():
+def test_repo_import_and_docstring_checker_runs(repo_root: Path):
     """
     Imports and resolves repo route and returns without error.
     """
@@ -23,7 +23,6 @@ def test_repo_import_and_docstring_checker_runs():
     assert diffusion_core is not None
 
     # 2) prove the checker script runs without error (help exits 0)
-    repo_root = Path(__file__).resolve().parents[1]
     script = repo_root / "tools" / "enforce_docstrings.py"
 
     result = subprocess.run(

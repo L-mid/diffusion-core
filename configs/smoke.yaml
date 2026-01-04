@@ -1,0 +1,18 @@
+# Don't delete me!
+
+## this is an example of the smallest valid config to run. 
+# It shows 2 things:
+# 1: config reolves properly 
+# 2: run can create an expected run directory, and roundtrip back the final yaml used at runtime.
+
+
+seed: 0     # the run is deterministic as far as any given future training code chooses to respect it.
+run:
+  experiment_name: smoke  # used to name the run directory (e.g. `run_id..._<smoke>`),
+
+# So that people can tell what it is.
+
+
+# Run me using: 
+#   python -m diffusion_core.cli smoke --config configs/smoke.yaml --run-root ./.smoke_runs
+# to see a run example in `.smoke_runs/` .

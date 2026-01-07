@@ -9,11 +9,13 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+  "numpy>=2.4.0",
   "pydantic>=2.0",
   "PyYAML>=6.0",
 ]
 
-[project.optional-dependencies]
+# uv-friendly dev deps
+[dependency-groups]
 dev = [
   "pre-commit>=3.7",
   "pytest>=8.0",
@@ -21,11 +23,12 @@ dev = [
   "ruff>=0.5",
   "mkdocs>=1.5",
   "mkdocs-material>=9",
+  "pytest-xdist>=3.8.0",
 ]
-docs = [
-  "mkdocs>=1.5",
-  "mkdocs-material>=9",
-]
+
+# pinned a minimum uv version so CI + contributors don’t diverge
+[tool.uv]
+required-version = ">=0.5.0"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

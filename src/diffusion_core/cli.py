@@ -37,6 +37,7 @@ In the CLI contract this uses, the command must print:
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from secrets import token_hex
@@ -51,11 +52,12 @@ def _default_run_id() -> str:
 
 
 def _cmd_smoke(args: argparse.Namespace) -> int:
-    """Organizes run_dir for logging purposes."""
+    """Runs the run, and organizes run_dir for logging purposes."""
     run_dir = run_once(
         config_path=Path(args.config),
         run_root=Path(args.run_root),
         run_id=str(args.run_id),
+        argv=sys.argv,  # capture exact invocation
     )
     # single line parsable by tests/tools.
     print(f"RUN_DIR: {run_dir}")
@@ -79,6 +81,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """High logic orchestrator."""
     parser = build_parser()
     ns = parser.parse_args(argv)
     return int(ns.func(ns))

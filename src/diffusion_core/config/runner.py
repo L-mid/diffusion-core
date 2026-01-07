@@ -6,6 +6,7 @@ Why: separate tests (speed + tracebacks) & bloat from the main CLI entrypoint.
 Logic flow at play:
   load validated config -> override run_root
   -> create run_dir layout -> write config.resolved.yaml
+  -> runtime provenance logging
   Return: run_dir   (for use from CLI)
 
 
@@ -14,17 +15,26 @@ Logic flow at play:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 
 from diffusion_core.config.config_utils import load_config, with_run_root, write_resolved_yaml
 from diffusion_core.config.run_layout import create_run_dir
+from diffusion_core.provenance import write_provenance_bundle
 
 
-def run_once(*, config_path: Path, run_root: Path, run_id: str = "smoke") -> Path:
+def run_once(
+    *,
+    config_path: Path,
+    run_root: Path,
+    run_id: str = "smoke",
+    argv: Sequence[str] | None = None,
+) -> Path:
     """
     Sub entrypoint CLI running logic:
       load validated config -> override run_root
       -> create run_dir layout -> write config.resolved.yaml
+      -> runtime provenance logging
     Returns: run_dir
     """
     cfg = load_config(config_path)  # loads cfg
@@ -36,4 +46,12 @@ def run_once(*, config_path: Path, run_root: Path, run_id: str = "smoke") -> Pat
     write_resolved_yaml(
         cfg, paths.run_dir / "config.resolved.yaml"
     )  # attached final run's yaml **ATFER** all cfg manipulations
+
+    write_provenance_bundle(
+        run_dir=paths.run_dir,
+        seed=int(cfg.seed),
+        argv=list(argv) if argv is not None else [],
+        fid_stats_path=None,
+    )  # runtime & enviroment information logged
+
     return paths.run_dir

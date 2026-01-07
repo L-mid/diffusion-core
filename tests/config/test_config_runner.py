@@ -4,9 +4,10 @@
 Tests:
     1) loads validated config -> override run_root
         -> create run_dir layout -> write config.resolved.yaml
+        -> runtime provenance logging
     2) yaml output actually readable.
 
-*This tests: tests/config/test_config_runner.py*
+*This tests: src/config/runner.py , src/provenance.py*
 """
 
 from __future__ import annotations

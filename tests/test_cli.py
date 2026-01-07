@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from diffusion_core.provenance import validate_provenance_file
+
 
 def _extract_run_dir(out: str) -> Path:
     """Ensure run_dir is recoverable."""
@@ -61,6 +63,10 @@ def test_cli_integration(tmp_path: Path) -> None:
     assert p.returncode == 0, f"CLI smoke failed\n\nOUT:\n{p.stdout}"
 
     run_dir = _extract_run_dir(p.stdout)
+
+    # provenance checks:
+    prov = run_dir / "meta" / "provenance.json"
+    validate_provenance_file(prov)
 
     # expected outputs
     assert (run_dir / "config.resolved.yaml").is_file()
